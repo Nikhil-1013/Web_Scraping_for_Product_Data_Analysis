@@ -10,6 +10,7 @@ from tkinter import scrolledtext, filedialog
 def capture(Urls, output_text):
 
     try:
+        extracted_data = {}
         # Open Chrome
         options = webdriver.ChromeOptions()
         options.add_argument('--ignore-certificate-errors')
@@ -19,13 +20,13 @@ def capture(Urls, output_text):
         # Opening specific URL
         driver.get(Urls)
         driver.minimize_window()
-        proName =  driver.find_element(By.CSS_SELECTOR, "#pdp_product_name").text
+        extracted_data["Product Name"] =  driver.find_element(By.CSS_SELECTOR, "#pdp_product_name").text
         a_rating =  driver.find_elements(By.XPATH, '//div[@class = "jm-rating-filled jm-rating-imgsize"]/*')
-        a_rating = a_rating[-1].get_attribute('id')
-        t_review =  driver.find_element(By.XPATH, '//span[@class = "review-count jm-body-m-bold jm-fc-primary-60 jm-pl-xs"]').text
-        proID = driver.find_element(By.XPATH, '//div[@class = "jm-body-s-bold jm-mr-xxs"]').text.split(" ")[2]
-        print(proName,a_rating, t_review, proID)
-        return proName,a_rating, t_review, proID
+        extracted_data["Avg Rating"] = a_rating[-1].get_attribute('id')
+        extracted_data["Total Ratings"] =  driver.find_element(By.XPATH, '//span[@class = "review-count jm-body-m-bold jm-fc-primary-60 jm-pl-xs"]').text
+        extracted_data["Product ID"] = driver.find_element(By.XPATH, '//div[@class = "jm-body-s-bold jm-mr-xxs"]').text.split(" ")[2]
+        # print(proName,a_rating, t_review, proID)
+        return extracted_data
     except Exception as e:
         output_text.insert(tk.END, f"Error occurred while processing this URL : \n{Urls}\n")
         output_text.update()# Update the GUI 
@@ -49,13 +50,13 @@ def process_urls(output_text):
         # Looping for Multiple links
         for Urls in df['Url']:
             # Calling capture function
-            a,b,c,d = capture(Urls, output_text) 
+            extracted_data = capture(Urls, output_text) 
             j = j-1
             output_text.insert(tk.END, "\n"+str(j)+" Remaining out of "+k+"\n")
-            print("\nPro_Name: ",a,"\nAvg_Rating: ",b,"\nTot_Reviews: ",c,"\nPID: ",d,"\nLink: ",Urls,"\n")
-            output_text.insert(tk.END, "\nPro_Name: "+a+"\nAvg_Rating: "+b+"\nTot_Reviews: "+c+"\nPID: "+d+"\nLink: "+Urls+"\n")
+            print("\nPro_Name: ",extracted_data["Product Name"],"\nAvg_Rating: ",extracted_data["Avg Rating"],"\nTot_Reviews: ",extracted_data["Total Ratings"],"\nPID: ",extracted_data["Product ID"],"\nLink: ",Urls,"\n")
+            output_text.insert(tk.END, "\nPro_Name: "+extracted_data["Product Name"]+"\nAvg_Rating: "+extracted_data["Avg Rating"]+"\nTot_Reviews: "+extracted_data["Total Ratings"]+"\nPID: "+extracted_data["Product ID"]+"\nLink: "+Urls+"\n")
             output_text.update() # Update the GUI 
-            data.append({'Product Link': Urls, 'Product Name': a, 'Product ID': d, 'Average Rating': b, 'Total Reviews': c})
+            data.append(extracted_data)
             default = data
 
         # Saving to Excel file
