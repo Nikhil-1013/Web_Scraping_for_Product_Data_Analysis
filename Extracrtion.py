@@ -25,8 +25,8 @@ def capture(Urls, output_text):
         extracted_data["Avg Rating"] = a_rating[-1].get_attribute('id')
         extracted_data["Total Ratings"] =  driver.find_element(By.XPATH, '//span[@class = "review-count jm-body-m-bold jm-fc-primary-60 jm-pl-xs"]').text
         extracted_data["Product ID"] = driver.find_element(By.XPATH, '//div[@class = "jm-body-s-bold jm-mr-xxs"]').text.split(" ")[2]
-        # print(proName,a_rating, t_review, proID)
         return extracted_data
+    
     except Exception as e:
         output_text.insert(tk.END, f"Error occurred while processing this URL : \n{Urls}\n")
         output_text.update()# Update the GUI 
